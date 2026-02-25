@@ -1,0 +1,376 @@
+This section focuses on:
+
+Heavy math tricks (CRT, Lucas, Garner)
+
+Pollard Rho + Miller Rabin
+
+NTT (Number Theoretic Transform)
+
+Link-Cut Trees (conceptual)
+
+Advanced tree decompositions
+
+Offline dynamic connectivity
+
+Persistent data structures deeper
+
+Dynamic programming optimizations deeper
+
+Advanced geometry (half-plane intersection)
+
+Flow modeling tricks elite level
+
+Append this to your master README.
+
+🔥 SECTION 33 — CHINESE REMAINDER THEOREM (CRT)
+
+Used when:
+Solve system:
+
+x ≡ a1 (mod m1)
+x ≡ a2 (mod m2)
+...
+Extended GCD
+def extended_gcd(a, b):
+    if b == 0:
+        return a, 1, 0
+    g, x1, y1 = extended_gcd(b, a % b)
+    x = y1
+    y = x1 - (a // b) * y1
+    return g, x, y
+CRT for Two Equations
+def crt(a1, m1, a2, m2):
+    g, x, y = extended_gcd(m1, m2)
+    if (a2 - a1) % g != 0:
+        return None
+    
+    lcm = m1 // g * m2
+    result = (a1 + (a2 - a1)//g * x % (m2//g) * m1) % lcm
+    return result, lcm
+
+Used in:
+
+Modular equations
+
+Calendar problems
+
+Cyclic sequences
+
+🔥 SECTION 34 — LUCAS THEOREM
+
+Used when:
+Compute nCr mod p where n large (10^18) and p prime small.
+
+Key idea:
+Break into base p digits.
+
+def lucas(n, r, p):
+    if r == 0:
+        return 1
+    ni = n % p
+    ri = r % p
+    if ri > ni:
+        return 0
+    return lucas(n//p, r//p, p) * nCr(ni, ri) % p
+🔥 SECTION 35 — MILLER–RABIN (PRIMALITY TEST)
+
+Fast primality test for 64-bit numbers.
+
+def mod_mul(a, b, mod):
+    return (a * b) % mod
+
+def mod_pow(a, d, mod):
+    result = 1
+    while d:
+        if d & 1:
+            result = mod_mul(result, a, mod)
+        a = mod_mul(a, a, mod)
+        d >>= 1
+    return result
+
+def is_prime(n):
+    if n < 2:
+        return False
+    for p in [2,3,5,7,11,13,17,19,23,29]:
+        if n % p == 0:
+            return n == p
+    
+    d = n - 1
+    s = 0
+    while d % 2 == 0:
+        d //= 2
+        s += 1
+    
+    for a in [2, 325, 9375, 28178, 450775, 9780504, 1795265022]:
+        if a % n == 0:
+            return True
+        x = mod_pow(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(s - 1):
+            x = mod_mul(x, x, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
+
+Deterministic for 64-bit.
+
+🔥 SECTION 36 — POLLARD RHO (FACTORING)
+
+Used to factor large numbers (~10^18).
+
+import random
+
+def pollards_rho(n):
+    if n % 2 == 0:
+        return 2
+    
+    def f(x):
+        return (x*x + 1) % n
+    
+    x = random.randint(2, n-1)
+    y = x
+    d = 1
+    
+    while d == 1:
+        x = f(x)
+        y = f(f(y))
+        d = math.gcd(abs(x - y), n)
+        if d == n:
+            return pollards_rho(n)
+    return d
+
+Combine with Miller-Rabin.
+
+🔥 SECTION 37 — NTT (NUMBER THEORETIC TRANSFORM)
+
+Used when:
+
+Exact polynomial multiplication mod prime
+
+Avoid floating errors of FFT
+
+Requires:
+Prime of form:
+
+k * 2^n + 1
+
+Common prime:
+
+998244353
+
+Core structure similar to FFT but modulo arithmetic.
+
+🔥 SECTION 38 — LINK CUT TREE (Conceptual)
+
+Used for:
+
+Dynamic tree queries
+
+Edge insertion/removal
+
+Path queries
+
+Operations:
+
+Access
+
+Splay
+
+Cut
+
+Link
+
+Used in:
+
+Dynamic connectivity
+
+Online tree queries
+
+🔥 SECTION 39 — OFFLINE DYNAMIC CONNECTIVITY
+
+Used when:
+Edges added/removed over time.
+
+Technique:
+
+Segment tree on time
+
+Rollback DSU
+
+Key concept:
+Maintain DSU with undo support.
+
+🔥 SECTION 40 — PERSISTENT DATA STRUCTURES
+
+Used in:
+
+Versioned queries
+
+Kth smallest in prefix
+
+Historical queries
+
+Core idea:
+Copy only modified nodes.
+
+🔥 SECTION 41 — HALF-PLANE INTERSECTION
+
+Used in:
+
+Linear inequalities
+
+Convex polygon intersection
+
+Optimization geometry
+
+Requires:
+Sorting by angle
+Using deque
+Cross product logic
+
+🔥 SECTION 42 — FLOW MODELING TRICKS (ELITE)
+
+Recognize flow problems:
+
+If:
+
+Assign jobs to workers
+
+Capacity constraints
+
+Choose at most k
+
+Cut minimum removal
+
+Partition graph
+
+Model:
+
+Source → left nodes → right nodes → sink
+
+🔥 SECTION 43 — DP WITH BITSETS (ULTRA FAST)
+
+Used when:
+Subset sum with large n but small total.
+
+Python bitset trick:
+
+def subset_sum(nums):
+    dp = 1
+    for num in nums:
+        dp |= dp << num
+    return dp
+
+Check if sum s possible:
+
+if (dp >> s) & 1:
+    print("possible")
+
+Very powerful.
+
+🔥 SECTION 44 — MATRIX TREE THEOREM
+
+Used to count spanning trees.
+
+Construct Laplacian matrix.
+Delete one row and column.
+Compute determinant.
+
+Advanced algebra required.
+
+🔥 SECTION 45 — BURNSIDE’S LEMMA
+
+Used in:
+
+Counting symmetric colorings
+
+Necklace problems
+
+Group theory counting
+
+Formula:
+
+Answer = (1 / |G|) * sum over group elements of fixed configurations
+
+Used in:
+
+Rotation symmetry problems
+
+🔥 SECTION 46 — ADVANCED PROBLEM TRANSFORMATION
+
+Elite modeling patterns:
+
+Convert grid to bipartite graph.
+
+Convert matching to flow.
+
+Convert XOR to linear basis.
+
+Convert constraints to 2-SAT.
+
+Convert difference constraints to shortest path.
+
+Convert circular array to doubled array.
+
+Convert tree to Euler tour + segment tree.
+
+Convert subtree queries to range queries.
+
+Convert path queries to HLD.
+
+Convert DP transition to matrix exponentiation.
+
+🔥 SECTION 47 — 2-SAT
+
+Used when:
+Boolean variables with OR constraints.
+
+Transform:
+(a OR b)
+→ implications:
+¬a → b
+¬b → a
+
+Solve with SCC.
+
+🔥 SECTION 48 — LINEAR BASIS (XOR BASIS)
+
+Used for:
+
+Max XOR subset
+
+Count independent XOR vectors
+
+def insert_basis(basis, x):
+    for b in basis:
+        x = min(x, x ^ b)
+    if x:
+        basis.append(x)
+🔥 FINAL ELITE INSIGHT
+
+At top level:
+
+You no longer think in:
+
+Arrays
+
+Loops
+
+You think in:
+
+Transformations
+
+State spaces
+
+Algebra
+
+Graph modeling
+
+Complexity scaling
+
+Constraint reduction
+
+That is how red coders think.
