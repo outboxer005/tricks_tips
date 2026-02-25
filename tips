@@ -1,0 +1,450 @@
+Perfect ✅
+Below is a **clean README.md formatted version** of the Competitive Coding Tricks you asked for.
+You can directly copy-paste this into:
+
+```
+README_COMPETITIVE_TRICKS.md
+```
+
+---
+
+# 🧠 Competitive Coding Tricks Handbook
+
+This file contains **important tricks, templates, and modeling patterns** frequently used in competitive programming.
+
+Use this as a quick-reference during contests.
+
+---
+
+# 🎲 1. Dice Simulation Tricks
+
+### 🔹 Dice Representation
+
+Store dice faces as:
+
+```
+        top
+left  front  right  back
+        bottom
+```
+
+Represent as:
+
+```python
+# [top, bottom, left, right, front, back]
+dice = [1, 6, 4, 3, 2, 5]
+```
+
+---
+
+### 🔹 Roll Operations
+
+```python
+def roll_north(d):
+    return [d[4], d[5], d[2], d[3], d[1], d[0]]
+
+def roll_south(d):
+    return [d[5], d[4], d[2], d[3], d[0], d[1]]
+
+def roll_east(d):
+    return [d[2], d[3], d[1], d[0], d[4], d[5]]
+
+def roll_west(d):
+    return [d[3], d[2], d[0], d[1], d[4], d[5]]
+```
+
+### 📌 Use Cases
+
+* Dice rolling problems
+* 3D state simulation
+* Cube orientation tracking
+
+---
+
+# 🧭 2. Grid Movement Templates
+
+### 🔹 4 Directions
+
+```python
+dx = [-1, 1, 0, 0]
+dy = [0, 0, -1, 1]
+```
+
+---
+
+### 🔹 8 Directions
+
+```python
+dx = [-1,-1,-1,0,0,1,1,1]
+dy = [-1,0,1,-1,1,-1,0,1]
+```
+
+---
+
+### 🔹 Knight Moves
+
+```python
+dx = [-2,-2,-1,-1,1,1,2,2]
+dy = [-1,1,-2,2,-2,2,-1,1]
+```
+
+### 📌 Standard Usage
+
+```python
+for i in range(4):
+    nx = x + dx[i]
+    ny = y + dy[i]
+```
+
+---
+
+# 🗺 3. Coordinate Compression
+
+Used when values are large (10^9) but count is small.
+
+```python
+def coordinate_compress(arr):
+    unique = sorted(set(arr))
+    mapping = {v:i for i,v in enumerate(unique)}
+    return [mapping[x] for x in arr]
+```
+
+### 📌 Use Cases
+
+* Segment Trees
+* Fenwick Trees
+* Interval Problems
+* Geometry
+
+---
+
+# ➕ 4. Prefix Sum Tricks
+
+### 🔹 1D Prefix
+
+```python
+def prefix_sum(arr):
+    n = len(arr)
+    pre = [0]*(n+1)
+    for i in range(n):
+        pre[i+1] = pre[i] + arr[i]
+    return pre
+```
+
+Range sum:
+
+```
+sum(l, r) = pre[r+1] - pre[l]
+```
+
+---
+
+### 🔹 2D Prefix
+
+```python
+def prefix_2d(grid):
+    n = len(grid)
+    m = len(grid[0])
+    pre = [[0]*(m+1) for _ in range(n+1)]
+    
+    for i in range(n):
+        for j in range(m):
+            pre[i+1][j+1] = (
+                grid[i][j]
+                + pre[i][j+1]
+                + pre[i+1][j]
+                - pre[i][j]
+            )
+    return pre
+```
+
+---
+
+# 🔄 5. Difference Array (Range Updates)
+
+```python
+def range_update(n, updates):
+    arr = [0]*(n+1)
+    
+    for l, r, val in updates:
+        arr[l] += val
+        arr[r+1] -= val
+    
+    for i in range(1,n):
+        arr[i] += arr[i-1]
+    
+    return arr[:-1]
+```
+
+### 📌 Use Cases
+
+* Many range updates
+* Competitive constraints optimization
+
+---
+
+# 🔢 6. Bit Manipulation Tricks
+
+### 🔹 Power of 2
+
+```python
+def is_power_of_two(n):
+    return n > 0 and (n & (n-1)) == 0
+```
+
+---
+
+### 🔹 Count Set Bits
+
+```python
+def count_bits(n):
+    return bin(n).count('1')
+```
+
+---
+
+### 🔹 Rightmost Set Bit
+
+```python
+def rightmost_set_bit(n):
+    return n & -n
+```
+
+---
+
+### 🔹 Submask Iteration
+
+```python
+mask = 13
+sub = mask
+while sub:
+    print(sub)
+    sub = (sub-1) & mask
+```
+
+Used in bitmask DP.
+
+---
+
+# 🌐 7. Graph Modeling Tricks
+
+### 🔹 Grid to Graph Node ID
+
+```python
+def node_id(i, j, m):
+    return i*m + j
+```
+
+---
+
+### 🔹 Multi-Source BFS
+
+```python
+from collections import deque
+
+def multi_source_bfs(graph, sources):
+    dist = {node: float('inf') for node in graph}
+    q = deque()
+    
+    for s in sources:
+        dist[s] = 0
+        q.append(s)
+    
+    while q:
+        node = q.popleft()
+        for nei in graph[node]:
+            if dist[nei] > dist[node] + 1:
+                dist[nei] = dist[node] + 1
+                q.append(nei)
+    
+    return dist
+```
+
+---
+
+# 📐 8. Geometry Tricks
+
+### 🔹 Euclidean Distance
+
+```python
+import math
+
+def distance(p1, p2):
+    return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+```
+
+---
+
+### 🔹 Manhattan Distance
+
+```python
+def manhattan(p1, p2):
+    return abs(p1[0]-p2[0]) + abs(p1[1]-p2[1])
+```
+
+---
+
+### 🔹 Cross Product (Orientation Test)
+
+```python
+def cross(o, a, b):
+    return (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0])
+```
+
+Result:
+
+* > 0 → Counterclockwise
+* < 0 → Clockwise
+* = 0 → Collinear
+
+Used in:
+
+* Convex Hull
+* Line Intersection
+* Polygon Area
+
+---
+
+# 📊 9. Sweep Line Trick
+
+```python
+events = []
+
+for l, r in intervals:
+    events.append((l, 1))
+    events.append((r+1, -1))
+
+events.sort()
+
+active = 0
+for pos, val in events:
+    active += val
+    print(pos, active)
+```
+
+Used in interval overlap problems.
+
+---
+
+# 👆 10. Two Pointers Template
+
+```python
+def two_pointers(arr):
+    left = 0
+    for right in range(len(arr)):
+        while some_condition:
+            left += 1
+```
+
+Used for:
+
+* Longest subarray
+* Sliding window
+* At most K distinct
+
+---
+
+# 🔍 11. Binary Search on Answer
+
+```python
+def binary_search_answer(low, high):
+    while low < high:
+        mid = (low + high) // 2
+        
+        if possible(mid):
+            high = mid
+        else:
+            low = mid + 1
+    
+    return low
+```
+
+Used when:
+
+* Minimize maximum
+* Maximize minimum
+* Partitioning problems
+
+---
+
+# ⚡ 12. Meet in the Middle
+
+```python
+from itertools import combinations
+
+def subset_sums(arr):
+    n = len(arr)
+    sums = []
+    for r in range(n+1):
+        for comb in combinations(arr, r):
+            sums.append(sum(comb))
+    return sums
+```
+
+Used when:
+
+* n ≤ 40
+* Subset sum problems
+
+---
+
+# 🚀 13. Fast I/O
+
+```python
+import sys
+input = sys.stdin.readline
+```
+
+---
+
+# 🧮 14. Modular Arithmetic
+
+```python
+MOD = 10**9 + 7
+
+def mod_add(a, b):
+    return (a + b) % MOD
+
+def mod_mul(a, b):
+    return (a * b) % MOD
+
+def mod_pow(a, b):
+    res = 1
+    while b:
+        if b & 1:
+            res = (res * a) % MOD
+        a = (a * a) % MOD
+        b >>= 1
+    return res
+```
+
+---
+
+# 📌 Pattern Recognition Guide
+
+| If Problem Mentions      | Think About              |
+| ------------------------ | ------------------------ |
+| Shortest path            | BFS / Dijkstra           |
+| Many range queries       | Prefix / Segment Tree    |
+| Many range updates       | Difference Array         |
+| Large values small count | Compression              |
+| Minimize max             | Binary Search Answer     |
+| Small n subsets          | Bitmask / Meet in Middle |
+| Interval overlaps        | Sweep Line               |
+| Tree queries             | LCA / Binary Lifting     |
+
+---
+
+This is your **Core Competitive Coding Tricks README**.
+
+---
+
+Next we can create:
+
+* Advanced DP Tricks README
+* Graph Advanced Tricks README
+* Geometry Advanced Tricks README
+* Game Theory Tricks README
+* Hard Implementation Edge Cases README
+
+Tell me the next section and we continue building your master repository 🚀
