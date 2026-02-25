@@ -1,0 +1,443 @@
+Excellent.
+Now we go into **advanced / elite-level competitive programming territory**.
+
+This section will include:
+
+* Heavy DP patterns
+* Advanced Data Structures
+* Flow algorithms
+* Advanced string algorithms
+* Tree tricks
+* Advanced geometry
+* Performance engineering
+* Problem transformation patterns
+
+You can append this to your master file.
+
+---
+
+# 🔥 SECTION 11 — EXTREME DP PATTERNS
+
+---
+
+## 1️⃣ Digit DP
+
+Used when:
+
+* Count numbers in range [L, R]
+* Constraints on digits
+* Large range (10^18)
+
+### Core Idea:
+
+DP on digit position + tight bound + extra state
+
+### Template
+
+```python
+def digit_dp(n):
+    s = str(n)
+    memo = {}
+
+    def dp(pos, tight, sum_digits):
+        if pos == len(s):
+            return 1  # valid number
+        
+        if (pos, tight, sum_digits) in memo:
+            return memo[(pos, tight, sum_digits)]
+        
+        limit = int(s[pos]) if tight else 9
+        total = 0
+        
+        for d in range(limit + 1):
+            total += dp(
+                pos + 1,
+                tight and d == limit,
+                sum_digits + d
+            )
+        
+        memo[(pos, tight, sum_digits)] = total
+        return total
+
+    return dp(0, True, 0)
+```
+
+---
+
+## 2️⃣ DP Optimization — Knuth Optimization
+
+Applies when:
+
+* Quadrangle inequality
+* Monotonic partition points
+
+Reduces:
+
+```
+O(n^3) → O(n^2)
+```
+
+Pattern:
+
+```
+opt[i][j-1] ≤ opt[i][j] ≤ opt[i+1][j]
+```
+
+Used in:
+
+* Optimal BST
+* Matrix chain variations
+
+---
+
+## 3️⃣ Divide & Conquer DP Optimization
+
+Reduces:
+
+```
+O(n^2 k) → O(n k log n)
+```
+
+Pattern:
+
+```python
+solve(l, r, opt_l, opt_r)
+```
+
+Used in:
+
+* Partition DP
+* Cost-based segmentation
+
+---
+
+## 4️⃣ SOS DP (Sum Over Subsets)
+
+Used in bitmask problems.
+
+```python
+def sos_dp(f, n):
+    for i in range(n):
+        for mask in range(1<<n):
+            if mask & (1<<i):
+                f[mask] += f[mask ^ (1<<i)]
+```
+
+---
+
+# 🔥 SECTION 12 — ADVANCED DATA STRUCTURES
+
+---
+
+## 1️⃣ Lazy Segment Tree
+
+Used when:
+
+* Range update
+* Range query
+
+Core idea:
+Delay propagation.
+
+```python
+class LazySegmentTree:
+    def __init__(self, n):
+        self.size = 1
+        while self.size < n:
+            self.size *= 2
+        self.tree = [0]*(2*self.size)
+        self.lazy = [0]*(2*self.size)
+
+    def _propagate(self, x, lx, rx):
+        if self.lazy[x] != 0 and rx - lx > 1:
+            self.tree[2*x+1] += self.lazy[x]
+            self.tree[2*x+2] += self.lazy[x]
+            self.lazy[2*x+1] += self.lazy[x]
+            self.lazy[2*x+2] += self.lazy[x]
+            self.lazy[x] = 0
+
+    def update(self, l, r, v, x=0, lx=0, rx=None):
+        if rx is None:
+            rx = self.size
+        if l >= rx or r <= lx:
+            return
+        if l <= lx and rx <= r:
+            self.tree[x] += v
+            self.lazy[x] += v
+            return
+        self._propagate(x, lx, rx)
+        mid = (lx + rx) // 2
+        self.update(l, r, v, 2*x+1, lx, mid)
+        self.update(l, r, v, 2*x+2, mid, rx)
+        self.tree[x] = max(self.tree[2*x+1], self.tree[2*x+2])
+```
+
+---
+
+## 2️⃣ Persistent Segment Tree
+
+Used in:
+
+* K-th smallest in subarray
+* Offline queries
+
+Key idea:
+Do not modify tree — create new nodes.
+
+---
+
+## 3️⃣ Treap (Tree + Heap)
+
+Randomized BST.
+
+Operations:
+
+* Insert
+* Delete
+* Split
+* Merge
+
+Time:
+O(log n) expected
+
+---
+
+# 🔥 SECTION 13 — MAX FLOW (DINIC)
+
+Used in:
+
+* Matching
+* Assignment problems
+* Cut problems
+
+```python
+from collections import deque
+
+class Dinic:
+    def __init__(self, n):
+        self.n = n
+        self.graph = [[] for _ in range(n)]
+
+    def add_edge(self, u, v, cap):
+        self.graph[u].append([v, cap, len(self.graph[v])])
+        self.graph[v].append([u, 0, len(self.graph[u])-1])
+
+    def bfs(self, s, t, level):
+        q = deque([s])
+        level[s] = 0
+        while q:
+            u = q.popleft()
+            for v, cap, _ in self.graph[u]:
+                if cap > 0 and level[v] < 0:
+                    level[v] = level[u] + 1
+                    q.append(v)
+        return level[t] >= 0
+```
+
+(Use DFS for blocking flow.)
+
+---
+
+# 🔥 SECTION 14 — ADVANCED STRING ALGORITHMS
+
+---
+
+## 1️⃣ KMP
+
+```python
+def prefix_function(s):
+    pi = [0]*len(s)
+    for i in range(1,len(s)):
+        j = pi[i-1]
+        while j>0 and s[i]!=s[j]:
+            j = pi[j-1]
+        if s[i]==s[j]:
+            j+=1
+        pi[i]=j
+    return pi
+```
+
+---
+
+## 2️⃣ Z Algorithm
+
+```python
+def z_algo(s):
+    n = len(s)
+    z = [0]*n
+    l = r = 0
+    for i in range(1,n):
+        if i<=r:
+            z[i]=min(r-i+1,z[i-l])
+        while i+z[i]<n and s[z[i]]==s[i+z[i]]:
+            z[i]+=1
+        if i+z[i]-1>r:
+            l=i
+            r=i+z[i]-1
+    return z
+```
+
+---
+
+# 🔥 SECTION 15 — TREE ADVANCED TRICKS
+
+---
+
+## 1️⃣ Binary Lifting (LCA)
+
+```python
+LOG = 20
+
+def preprocess(n, parent):
+    up = [[-1]*n for _ in range(LOG)]
+    up[0] = parent
+    
+    for i in range(1,LOG):
+        for v in range(n):
+            if up[i-1][v]!=-1:
+                up[i][v] = up[i-1][ up[i-1][v] ]
+    return up
+```
+
+---
+
+## 2️⃣ Heavy Light Decomposition (HLD)
+
+Used for:
+
+* Path queries in tree
+* Combine with segment tree
+
+Transforms tree into arrays.
+
+---
+
+# 🔥 SECTION 16 — HARD GEOMETRY
+
+---
+
+## 1️⃣ Line Intersection
+
+Using orientation test.
+
+Check:
+
+* Bounding box overlap
+* Cross product sign
+
+---
+
+## 2️⃣ Rotating Calipers
+
+Used for:
+
+* Diameter of convex hull
+* Maximum distance pair
+
+---
+
+# 🔥 SECTION 17 — PERFORMANCE ENGINEERING
+
+---
+
+## Micro-Optimizations
+
+* Use local variable references
+* Avoid global lookups
+* Avoid list slicing in loops
+* Use arrays instead of dict if possible
+* Preallocate lists
+* Avoid recursion for deep DFS
+* Use PyPy for heavy loops
+* Use PyPy for DP heavy
+
+---
+
+# 🔥 SECTION 18 — TRANSFORMATION PATTERNS
+
+---
+
+## 1️⃣ Bipartite Graph Modeling
+
+If:
+
+* Two sets
+* Pairing
+* Matching
+
+→ Convert to bipartite graph
+→ Use Hopcroft-Karp
+
+---
+
+## 2️⃣ Convert to Flow
+
+If:
+
+* Capacity
+* Assignment
+* Cut
+
+→ Model as flow network
+
+---
+
+## 3️⃣ Convert to Shortest Path
+
+If:
+
+* Min operations
+* Min transformations
+
+→ Graph shortest path
+
+---
+
+# 🔥 SECTION 19 — PROBLEM TYPE IDENTIFIER
+
+When reading a problem:
+
+Ask:
+
+1. Is it greedy?
+2. Is it DP?
+3. Is it graph?
+4. Is it math?
+5. Is it binary search answer?
+6. Is it state compression?
+7. Is it bitmask?
+8. Is it tree?
+9. Is it prefix/sweep?
+10. Is it geometry?
+
+---
+
+# 🔥 SECTION 20 — GRANDMASTER RULE
+
+If constraints allow:
+
+* Brute force → do it.
+* Greedy works → prove locally optimal.
+* DP possible → define state carefully.
+* Graph possible → model correctly.
+* Optimization needed → binary search answer.
+* Subset small → bitmask.
+* Interval → sweep line.
+
+---
+
+You now have a **serious master-level competitive coding document**.
+
+Next level topics we can go into:
+
+* Advanced Game Theory (Sprague-Grundy)
+* Interactive Problems
+* Probability & Expected Value DP
+* Advanced Flow modeling tricks
+* Randomized Algorithms
+* Matrix exponentiation tricks
+* Advanced combinatorics
+* FFT / NTT full implementation
+
+Tell me which elite topic next.
+We continue building your complete competitive programming arsenal. 🔥
